@@ -31,8 +31,12 @@ object Dependencies {
     akkaActor,
     akkaTestKit,
     hadoopClient,
+    "org.scalaz"   %% "scalaz-core" % "7.0.6",
+    "mysql" % "mysql-connector-java" % "5.1.34",
+    "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
     logbackClassic % "test",
     scalaTest      % "test",
-    mockitoAll     % "test"
+    mockitoAll     % "test",
+    "org.specs2"   %% "specs2" % "2.3.12" % "test"
   )
 }
