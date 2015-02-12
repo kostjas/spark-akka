@@ -13,7 +13,7 @@ class NotificationServiceTest extends SpecificationWithJUnit {
     "notify all recipient actors" in new TestScope {
 
 
-      ko
+      ok
     }
   }
 
