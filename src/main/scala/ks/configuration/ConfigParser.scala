@@ -1,7 +1,6 @@
 package ks.configuration
 
 import types.Config
-import scala.collection._
 import scalaz.std.string._
 import scalaz.syntax.equal._
 

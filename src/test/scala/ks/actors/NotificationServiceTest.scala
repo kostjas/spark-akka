@@ -1,8 +1,6 @@
 package ks.actors
 
-import akka.actor.Actor.Receive
 import akka.actor.{Actor, Props, ActorSystem}
-import akka.testkit.{TestActor, TestProbe}
 import org.specs2.mutable.SpecificationWithJUnit
 import org.specs2.specification.Scope
 

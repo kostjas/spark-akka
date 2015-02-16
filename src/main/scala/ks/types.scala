@@ -6,4 +6,5 @@ package object types {
 
   type Config = Map[String, Set[String]]
   type Logging = com.typesafe.scalalogging.StrictLogging
+  type ActorData = List[String]
 }
