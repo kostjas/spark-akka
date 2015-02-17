@@ -10,7 +10,7 @@ class ExecutorActor extends Actor with Logging {
   override def receive: Receive = {
     case ExecutorStart(data, gatherer) =>
       val result = executeFunction(data)
-      gatherer ! FinishedSuccess(self.path.name, result)
+      gatherer ! FinishedSuccess(result)
     case msg => logger.error(s"This message cannot be processed: $msg !")
   }
 

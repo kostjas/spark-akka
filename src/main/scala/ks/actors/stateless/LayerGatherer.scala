@@ -1,6 +1,6 @@
 package ks.actors.stateless
 
-import akka.actor.FSM.Normal
+import akka.actor.FSM.{Failure, Normal}
 import akka.actor.{ActorRef, Actor, LoggingFSM, Props}
 import scala.collection.SortedMap
 import scalaz.std.string._
@@ -19,14 +19,13 @@ class LayerGatherer(currentAwaitedLayer: Set[ActorRef], anotherLayers: SortedMap
     self ! "terminate"
   }
 
-
   when(WaitingLayer) {
-    case Event(FinishedSuccess(senderName, resultData), currentStateData: AwaitedActorsData) =>
-      val newState = processMessage(senderName, resultData, currentStateData)
+    case Event(FinishedSuccess(resultData), currentStateData: AwaitedActorsData) =>
+      val newState = processMessage(resultData, currentStateData)
       if (newState.processedActors.forall(_._2)) {
         implicit val system = context.system
         notifier.notifyNextLayer(resultData, anotherLayers)
-        stop(Normal)
+        goto(Done) using newState
       } else stay() using newState
   }
 
@@ -34,13 +33,25 @@ class LayerGatherer(currentAwaitedLayer: Set[ActorRef], anotherLayers: SortedMap
     case Event("terminate", _) => stop(Normal)
   }
 
+  when(Done) {
+    case Event("terminate", _) => stop(Normal)
+  }
+
+  whenUnhandled {
+    case m =>
+      val errorMsg = s"Unhandled message: $m !"
+      log.error(errorMsg)
+      stop(Failure(errorMsg))
+  }
+
   initialize()
 
-  def processMessage(actorName: String, resultData: List[String], stateData: AwaitedActorsData): AwaitedActorsData = {
+  def processMessage(resultData: List[String], stateData: AwaitedActorsData): AwaitedActorsData = {
     stateData match {
       case AwaitedActorsData(processedDeps, data) =>
         val processedActors = processedDeps.map { d =>
-          if (d._1.path.name === actorName) (d._1, true) else d
+          import types._
+          if (d._1 === sender()) (d._1, true) else d
         }
         AwaitedActorsData(processedActors, data ::: resultData)
     }
@@ -49,7 +60,7 @@ class LayerGatherer(currentAwaitedLayer: Set[ActorRef], anotherLayers: SortedMap
 
 object LayerGatherer {
   sealed trait Action
-  case class FinishedSuccess(actorName: String, data: List[String]) extends Action
+  case class FinishedSuccess(data: List[String]) extends Action
 
   sealed trait Data
   case object NoData extends Data
