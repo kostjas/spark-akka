@@ -46,6 +46,8 @@ class LayerGatherer(currentAwaitedLayer: Set[ActorRef], anotherLayers: SortedMap
 
   initialize()
 
+  //TODO we should find out how to kill actor.
+
   def processMessage(resultData: List[String], stateData: AwaitedActorsData): AwaitedActorsData = {
     stateData match {
       case AwaitedActorsData(processedDeps, data) =>

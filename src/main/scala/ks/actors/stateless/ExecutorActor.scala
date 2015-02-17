@@ -16,7 +16,8 @@ class ExecutorActor extends Actor with Logging {
 
   //Hier should be defined users` function
   def executeFunction(data: List[String]): ActorData = {
-    logger.info(s"Actor with name ${self.path.name} executed task and processed data: $data.")
+    //TODO fix logging
+    context.system.log.info(s"Actor with name ${self.path.name} executed task and processed data: $data.")
     data.map(_ + self.path.name)
   }
 }

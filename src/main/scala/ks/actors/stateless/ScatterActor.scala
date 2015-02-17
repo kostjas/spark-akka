@@ -1,24 +1,24 @@
 package ks.actors.stateless
 
 import akka.actor.{Actor, ActorRef, Props}
-import ks.configuration.ConfigParser
 import ks.configuration.ConfigParser.Layer
-import types.{Config, Logging}
+import types.Logging
 
 import scala.collection.SortedMap
 
-class ScatterActor(config: Config, dataLoader: InitialDataLoader) extends Actor with Logging {
+class ScatterActor(layers: Map[Int, Layer], dataLoader: InitialDataLoader) extends Actor with Logging {
 
   override def receive: Receive = {
-    case _ =>
-
-      val layers = ConfigParser.getLayers(config)
-
+    case Start =>
       val executorActors = createStructureOfExecutors(layers)
 
+      val gatherer = context.actorOf(LayerGatherer.props(executorActors.head._2, executorActors.tail))
+
       executorActors.head._2.foreach { actor =>
-        actor ! ExecutorStart(dataLoader.load(), context.actorOf(LayerGatherer.props(executorActors.head._2, executorActors.tail)))
+        actor ! ExecutorStart(dataLoader.load(), gatherer)
       }
+
+    case m => logger.error(s"Unsupportable type of message: $m .")
   }
 
   def createStructureOfExecutors(layers: Map[Int, Layer]): SortedMap[Int, Set[ActorRef]] = {
@@ -27,3 +27,9 @@ class ScatterActor(config: Config, dataLoader: InitialDataLoader) extends Actor 
     )
   }
 }
+
+object ScatterActor {
+  def props(layers: Map[Int, Layer], dataLoader: InitialDataLoader) = Props(new ScatterActor(layers, dataLoader))
+}
+
+case object Start

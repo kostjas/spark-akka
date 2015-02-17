@@ -14,10 +14,15 @@ class ActorNotifier extends IActorNotifier {
   override def notifyNextLayer(data: List[String],
                                anotherLayers: SortedMap[Int, Set[ActorRef]])
                               (implicit context: ActorContext): Unit = {
-    val nextLayer = anotherLayers.head._2
+    anotherLayers.headOption match {
+      case Some((_, actors)) if actors.nonEmpty =>
+        val gatherer = context.actorOf(LayerGatherer.props(actors, anotherLayers.tail))
+        actors.foreach( _ ! ExecutorStart(data, gatherer) )
 
-    val gatherer = context.actorOf(LayerGatherer.props(nextLayer, anotherLayers.tail))
+      case None =>
+        //TODO fix logging!!!
+        context.system.log.info("Processing was finished!!!!")
+    }
 
-    nextLayer.foreach( _ ! ExecutorStart(data, gatherer) )
   }
 }
