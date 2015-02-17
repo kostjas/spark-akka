@@ -1,6 +1,7 @@
 package ks.actors.stateless
 
 import akka.actor.{ActorContext, ActorRef}
+import types.Logging
 
 import scala.collection.SortedMap
 
@@ -10,7 +11,7 @@ trait IActorNotifier {
                      (implicit context: ActorContext)
 }
 
-class ActorNotifier extends IActorNotifier {
+class ActorNotifier extends IActorNotifier with Logging {
   override def notifyNextLayer(data: List[String],
                                anotherLayers: SortedMap[Int, Set[ActorRef]])
                               (implicit context: ActorContext): Unit = {
@@ -19,9 +20,7 @@ class ActorNotifier extends IActorNotifier {
         val gatherer = context.actorOf(LayerGatherer.props(actors, anotherLayers.tail))
         actors.foreach( _ ! ExecutorStart(data, gatherer) )
 
-      case None =>
-        //TODO fix logging!!!
-        context.system.log.info("Processing was finished!!!!")
+      case None => logger.info("Processing was finished!!!!")
     }
 
   }
