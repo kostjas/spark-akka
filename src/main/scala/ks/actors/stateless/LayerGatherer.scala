@@ -24,7 +24,7 @@ class LayerGatherer(currentAwaitedLayer: Set[ActorRef], anotherLayers: SortedMap
       val newState = processMessage(resultData, currentStateData)
       if (newState.processedActors.forall(_._2)) {
         implicit val system = context.system
-        notifier.notifyNextLayer(resultData, anotherLayers)
+        notifier.notifyNextLayer(newState.summaryResult, anotherLayers)
         goto(Done) using newState
       } else stay() using newState
   }
